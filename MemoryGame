@@ -1,0 +1,150 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <random>
+#include <chrono>
+#include <thread>
+#include <iomanip>
+
+using namespace std;
+using Clock = chrono::steady_clock;
+
+// Grid dimensions (must be even total)
+static const int ROWS = 4;
+static const int COLS = 4;
+
+// Pause (in milliseconds) after showing a failed match
+static const int PAUSE_MS = 1500;
+
+// Utility to clear the screen 
+void clearScreen() {
+    #ifdef _WIN32
+      system("cls");
+    #else
+      system("clear");
+    #endif
+}
+
+// Print the current board, showing revealed cards and hiding others
+void printBoard(const vector<vector <string> > & board,
+                const vector<vector <bool> > & revealed)
+{
+    cout << "    ";
+    for(int c = 0; c < COLS; c++)
+        cout << setw(4) << c;
+    cout << "\n   +" << string(COLS*4, '-') << "+\n";
+
+    for(int r = 0; r < ROWS; r++) {
+        cout << setw(2) << r << " |";
+        for(int c = 0; c < COLS; c++) {
+            if (revealed[r][c]) {
+                cout << setw(4) << board[r][c];
+            } else {
+                cout << setw(4) << "*";
+            }
+        }
+        cout << " |\n";
+    }
+    cout << "   +" << string(COLS*4, '-') << "+\n";
+}
+
+// Prompt the user for a valid card coordinate
+pair<int,int> getSelection(const vector<vector <bool> >& revealed) {
+    int r, c;
+    while (true) {
+        cout << "Enter row and col (e.g. \"1 2\"): ";
+        if (!(cin >> r >> c)) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Invalid input. Try again.\n";
+            continue;
+        }
+        if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
+            if (!revealed[r][c]) {
+                return {r,c};
+            } else {
+                cout << "That card is already revealed. Pick another.\n";
+            }
+        } else {
+            cout << "Out of range. 0 ≤ row < " << ROWS
+                 << ", 0 ≤ col < " << COLS << ".\n";
+        }
+    }
+}
+
+int main() {
+    // 1) Prepare a list of fruits (pair each one)
+    vector<string> fruits = {
+      "🍎","🍌","🍒","🍇",
+      "🍉","🍍","🥝","🍑"
+    };
+    if ((int)fruits.size() * 2 != ROWS * COLS) {
+        cerr << "Error: ROWS*COLS must be twice the number of fruits.\n";
+        return 1;
+    }
+
+    // 2) Build the deck: duplicate and shuffle
+    vector<string> deck;
+    for (auto& f : fruits) {
+        deck.push_back(f);
+        deck.push_back(f);
+    }
+    // shuffle
+    auto rng = default_random_engine(
+      (unsigned)Clock::now().time_since_epoch().count());
+    shuffle(deck.begin(), deck.end(), rng);
+
+    // 3) Lay out the board
+    vector<vector<string>> board(ROWS, vector<string>(COLS));
+    vector<vector<bool>> revealed(ROWS, vector<bool>(COLS, false));
+    int idx = 0;
+    for (int r = 0; r < ROWS; r++)
+      for (int c = 0; c < COLS; c++)
+        board[r][c] = deck[idx++];
+
+    int pairsFound = 0, totalPairs = ROWS*COLS/2;
+    int nRounds=0;
+
+    // 4) Game loop
+    while (pairsFound < totalPairs) {
+        nRounds++;
+        clearScreen();
+        cout << "Memory Game: find all " << totalPairs << " pairs!\n\n";
+        printBoard(board, revealed);
+
+        // First selection
+        cout << "\nSelect first card:\n";
+        auto [r1, c1] = getSelection(revealed);
+        revealed[r1][c1] = true;
+        clearScreen();
+        printBoard(board, revealed);
+
+        // Second selection
+        cout << "\nSelect second card:\n";
+        auto [r2, c2] = getSelection(revealed);
+        revealed[r2][c2] = true;
+        clearScreen();
+        printBoard(board, revealed);
+
+        // Check for match
+        if (board[r1][c1] == board[r2][c2]) {
+            cout << "\nMatched! " << board[r1][c1] << "\n";
+            pairsFound++;
+        } else {
+            cout << "\nNot a match.\n";
+            // pause so the user can see
+            this_thread::sleep_for(chrono::milliseconds(PAUSE_MS));
+            // hide them again
+            revealed[r1][c1] = revealed[r2][c2] = false;
+        }
+        cout << "\n(Found " << pairsFound << " of " << totalPairs << " pairs.)\n";
+        cout << "Press Enter to continue...";
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.get();
+    }
+
+    clearScreen();
+    cout << "🎉 Congratulations! You found all " << totalPairs << " pairs in " << nRounds<<" rounds!🎉\n";
+    return 0;
+}
