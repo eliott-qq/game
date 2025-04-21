@@ -121,7 +121,6 @@ int main() {
     }
     cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear newline after difficulty input
 
-
     // 2) Define a large pool of fruits to support various grid sizes
     vector<string> fruitPool;
     fruitPool.push_back("🍎");
@@ -182,7 +181,7 @@ int main() {
 }
 
 // 3) Randomly select pairsNeeded fruits
-srand((unsigned)time(NULL));
+srand(static_cast<unsigned>(time(0)));
 fisherYatesShuffle(fruitPool);
 vector<string> selectedFruits(fruitPool.begin(), fruitPool.begin() + pairsNeeded);
 
@@ -204,6 +203,9 @@ for (int r = 0; r < ROWS; r++)
         board[r][c] = deck[idx++];
 
 int pairsFound = 0, totalPairs = ROWS * COLS / 2;
+
+// Start timer
+auto startTime = std::chrono::steady_clock::now();
 
 // 6) Game loop
 while (pairsFound < totalPairs) {
@@ -259,9 +261,14 @@ while (pairsFound < totalPairs) {
     cout << "Press Enter to continue...";
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
     cin.get();
+
+    // Stop timer
+    auto endTime = std::chrono::steady_clock::now();
+    duration<double> elapsed = endTime - startTime;
 }
 
 clearScreen();
 cout << "🎉 Congratulations! You found all " << totalPairs << " pairs! 🎉\n";
+cout << "⏱️ Time taken: " << fixed << setprecision(2) << elapsed.count() << " seconds.\n";
 return 0;
 }
