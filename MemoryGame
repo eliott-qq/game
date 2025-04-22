@@ -83,28 +83,35 @@ pair<int,int> getSelection(const vector<vector<bool> > & revealed, int rows, int
         }
     }
 }
-bool getDifficultyLevel(int& rows, int& cols) {
+bool getDifficultyLevel(int& rows, int& cols,int& timelimit) {
     char choice;
     while (true) {
         cout << "Choose difficulty level:\n";
-        cout << "  E - Easy (4x2, 4 pairs)\n";
-        cout << "  M - Medium (4x4, 8 pairs)\n";
-        cout << "  H - Hard (6x4, 12 pairs)\n";
-        cout << "  C - customize (rows * cols)\n";
+        cout << "  E - Easy (4x2, 4 pairs)";
+        cout << "  Timelimit = 90 seconds.\n";
+        cout << "  M - Medium (4x4, 8 pairs)";
+        cout << "  Timelimit = 150 seconds.\n";
+        cout << "  H - Hard (6x4, 12 pairs)";
+        cout << "  Timelimit = 200 seconds.\n";
+        cout << "  C - Customize (rows * cols)";
+        cout << "  Customize your timelimit\n";
         cout << "Enter E, M, H or C: ";
         cin >> choice;
         choice = toupper(choice);
         if (choice == 'E') {
             rows = 4;
             cols = 2;
+            timelimit = 90;
             return true;
         } else if (choice == 'M') {
             rows = 4;
             cols = 4;
+            timelimit = 150;
             return true;
         } else if (choice == 'H') {
             rows = 6;
             cols = 4;
+            timelimit = 200;
             return true;
         // Let user customize the grid
         } else if (choice == 'C') {
@@ -139,23 +146,15 @@ bool getDifficultyLevel(int& rows, int& cols) {
 }
 int main() {
     char decision;
-
+do{
     // 1) Prepare a list of fruits (pair each one)
     int ROWS, COLS;
-        // Prompt user for difficulty level and set grid size
-
-if (!getDifficultyLevel(ROWS, COLS)) {
+    int timelimit;
+    if (!getDifficultyLevel(ROWS, COLS)) {
         return 1;
     }
     cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear newline after difficulty input
-    // Ensure the grid size is valid (even number of cards)
-    if ((ROWS * COLS) % 2 != 0) {
-        cerr << "Error: Grid size (ROWS * COLS) must be even.\n";
-        return 1;
-    }
-
-    const int pairsNeeded = ROWS * COLS / 2;
-
+  
     // 2) Define a large pool of fruits to support various grid sizes
     vector<string> fruitPool;
     fruitPool.push_back("🍎");
@@ -197,6 +196,14 @@ if (!getDifficultyLevel(ROWS, COLS)) {
     fruitPool.push_back("🍑");
     fruitPool.push_back("🍍");
     fruitPool.push_back("🍒");
+
+  // Ensure the grid size is valid (even number of cards)
+    if ((ROWS * COLS) % 2 != 0) {
+        cerr << "Error: Grid size (ROWS * COLS) must be even.\n";
+        return 1;
+    }
+  // Calculate pairs needed 
+    const int pairsNeeded = ROWS * COLS / 2;
 
   // Check if fruit pool is sufficient
    if (fruitPool.size() < pairsNeeded) {
@@ -292,7 +299,17 @@ while (pairsFound < totalPairs) {
     duration<double> elapsed = endTime - startTime;
 }
 clearScreen();
+if (elapsed >= timelimit){
+cout << "Sorry. There is no time left."<< endl;
+cout << " Do you want to try again? (y/n) :" << endl;
+cin >> decision;
+}
+else{
 cout << "🎉 Congratulations! You found all " << totalPairs << " pairs! 🎉\n";
 cout << "⏱️ Time taken: " << fixed << setprecision(2) << elapsed.count() << " seconds.\n";
-}return 0;
+cout << " Do you want to try harder mode or customize your grid ?\n" << endl;
+}
+} 
+}while (choice == 'y' || choice == "Y');
+return 0;
 }
