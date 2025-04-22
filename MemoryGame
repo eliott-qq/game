@@ -30,16 +30,16 @@ void clearScreen() {
 
 // Print the current board, showing revealed cards and hiding others
 void printBoard(const vector<vector <string> > & board,
-                const vector<vector <bool> > & revealed)
+                const vector<vector <bool> > & revealed,int rows, int cols)
 {
     cout << "    ";
-    for(int c = 0; c < COLS; c++)
+    for(int c = 0; c < cols; c++)
         cout << setw(4) << c;
-    cout << "\n   +" << string(COLS*4, '-') << "+\n";
+    cout << "\n   +" << string(cols*4, '-') << "+\n";
 
-    for(int r = 0; r < ROWS; r++) {
+    for(int r = 0; r < rows; r++) {
         cout << setw(2) << r << " |";
-        for(int c = 0; c < COLS; c++) {
+        for(int c = 0; c < cols; c++) {
             if (revealed[r][c]) {
                 cout << setw(4) << board[r][c];
             } else {
@@ -48,7 +48,7 @@ void printBoard(const vector<vector <string> > & board,
         }
         cout << " |\n";
     }
-    cout << "   +" << string(COLS*4, '-') << "+\n";
+    cout << "   +" << string(cols*4, '-') << "+\n";
 }
 
 
@@ -87,31 +87,27 @@ bool getDifficultyLevel(int& rows, int& cols,int& timelimit) {
     char choice;
     while (true) {
         cout << "Choose difficulty level:\n";
-        cout << "  E - Easy (4x2, 4 pairs)";
-        cout << "  Timelimit = 90 seconds.\n";
-        cout << "  M - Medium (4x4, 8 pairs)";
-        cout << "  Timelimit = 150 seconds.\n";
-        cout << "  H - Hard (6x4, 12 pairs)";
-        cout << "  Timelimit = 200 seconds.\n";
-        cout << "  C - Customize (rows * cols)";
-        cout << "  Customize your timelimit\n";
+        cout << "  E - Easy (4x2, 4 pairs,timelimit = 180 seconds)"<<endl;
+        cout << "  M - Medium (4x4, 8 pairs,timelimit =240 seconds)"<<endl;
+        cout << "  H - Hard (6x4, 12 pairs,timelimit = 250 seconds)"<<endl;                                                         
+        cout << "  C - Customize (customize grid size and timelimit)"<<endl;
         cout << "Enter E, M, H or C: ";
         cin >> choice;
         choice = toupper(choice);
         if (choice == 'E') {
             rows = 4;
             cols = 2;
-            timelimit = 90;
+            timelimit = 180;
             return true;
         } else if (choice == 'M') {
             rows = 4;
             cols = 4;
-            timelimit = 150;
+            timelimit = 240;
             return true;
         } else if (choice == 'H') {
             rows = 6;
             cols = 4;
-            timelimit = 200;
+            timelimit = 250;
             return true;
         // Let user customize the grid
         } else if (choice == 'C') {
@@ -129,7 +125,7 @@ bool getDifficultyLevel(int& rows, int& cols,int& timelimit) {
                 cout << "Invalid input for rows or columns. Please try again.\n";
                 continue;
             }
-            if ((rows * cols % 2) ！=0 ) {
+            if ((rows * cols % 2) !=0 ) {
                 cout << "Error: Grid size must be even.\n";
                 continue;
             }
@@ -144,15 +140,25 @@ bool getDifficultyLevel(int& rows, int& cols,int& timelimit) {
         }
     }
 }
-int main() {
-    char decision;
-do{
-    // 1) Prepare a list of fruits (pair each one)
-    int ROWS, COLS;
-    int timelimit;
-    if (!getDifficultyLevel(ROWS, COLS)) {
-        return 1;
+// Fisher-Yates shuffle algorithm to randomize the order of elements.
+void fisherYatesShuffle(std::vector<string>& vec) {
+    // Seed the random number generator
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    // Shuffle the vector using the Fisher-Yates algorithm
+    // Perform the Fisher-Yates shuffle
+    for (size_t i = vec.size() - 1; i > 0; --i) {
+        std::uniform_int_distribution<size_t> dist(0, i);
+        size_t j = dist(gen);
+        std::swap(vec[i], vec[j]);
     }
+}
+void runprogram() {
+    char decision;
+    // 1) Prepare a list of fruits (pair each one)
+    int rows, cols;
+    int timelimit;
+    getDifficultyLevel(rows,cols,timelimit); 
     cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear newline after difficulty input
   
     // 2) Define a large pool of fruits to support various grid sizes
@@ -198,18 +204,18 @@ do{
     fruitPool.push_back("🍒");
 
   // Ensure the grid size is valid (even number of cards)
-    if ((ROWS * COLS) % 2 != 0) {
-        cerr << "Error: Grid size (ROWS * COLS) must be even.\n";
-        return 1;
+    if ((rows * cols) % 2 != 0) {
+        cerr << "Error: Grid size (rows * cols) must be even.\n";
+        return;
     }
   // Calculate pairs needed 
-    const int pairsNeeded = ROWS * COLS / 2;
+    const int pairsNeeded = rows * cols / 2;
 
   // Check if fruit pool is sufficient
    if (fruitPool.size() < pairsNeeded) {
     cerr << "Error: Fruit pool size (" << fruitPool.size() 
          << ") must be at least " << pairsNeeded << ".\n";
-    return 1;
+         return;
 }
 
 // 3) Randomly select pairsNeeded fruits
@@ -227,51 +233,51 @@ for (size_t i = 0; i < selectedFruits.size(); ++i) {
 fisherYatesShuffle(deck);
 
 // 5) Lay out the board
-vector<vector<string> > board(ROWS, vector<string>(COLS));
-vector<vector<bool> > revealed(ROWS, vector<bool>(COLS, false));
+vector<vector<string> > board(rows, vector<string>(cols));
+vector<vector<bool> > revealed(rows, vector<bool>(cols, false));
 int idx = 0;
-for (int r = 0; r < ROWS; r++)
-    for (int c = 0; c < COLS; c++)
+for (int r = 0; r < rows; r++){
+    for (int c = 0; c < cols; c++)
         board[r][c] = deck[idx++];
-
-int pairsFound = 0, totalPairs = ROWS * COLS / 2;
+}
+int pairsFound = 0, totalPairs = rows * cols / 2;
 
 // Start timer
 auto startTime = std::chrono::steady_clock::now();
-
+std ::chrono::duration<double> elapsed;
 // 6) Game loop
 while (pairsFound < totalPairs) {
     clearScreen();
     cout << "Memory Game: find all " << totalPairs << " pairs!\n\n";
-    printBoard(board, revealed, ROWS, COLS);
+    printBoard(board, revealed, rows, cols);
 
     // First selection
     cout << "\nSelect first card:\n";
-    pair<int,int> first = getSelection(revealed, ROWS, COLS);
+    pair<int,int> first = getSelection(revealed, rows, cols);
     if (first.first == -1 && first.second == -1) {
         clearScreen();
         cout << "Game quit. Thanks for playing!\n";
-        return 0;
+        return;
     }
     int r1 = first.first;
     int c1 = first.second;
     revealed[r1][c1] = true;
     clearScreen();
-    printBoard(board, revealed, ROWS, COLS);
+    printBoard(board, revealed, rows, cols);
 
     // Second selection
     cout << "\nSelect second card:\n";
-    pair<int,int> second = getSelection(revealed, ROWS, COLS);
+    pair<int,int> second = getSelection(revealed, rows, cols);
     if (second.first == -1 && second.second == -1) {
         clearScreen();
         cout << "Game quit. Thanks for playing!\n";
-        return 0;
+        return;
     }
     int r2 = second.first;
     int c2 = second.second;
     revealed[r2][c2] = true;
     clearScreen();
-    printBoard(board, revealed, ROWS, COLS);
+    printBoard(board, revealed, rows, cols);
 
     // Check for match
     if (board[r1][c1] == board[r2][c2]) {
@@ -296,20 +302,39 @@ while (pairsFound < totalPairs) {
 
     // Stop timer
     auto endTime = std::chrono::steady_clock::now();
-    duration<double> elapsed = endTime - startTime;
+    elapsed = endTime - startTime;
 }
 clearScreen();
-if (elapsed >= timelimit){
+if (elapsed.count() >= timelimit){
 cout << "Sorry. There is no time left."<< endl;
-cout << " Do you want to try again? (y/n) :" << endl;
-cin >> decision;
 }
 else{
 cout << "🎉 Congratulations! You found all " << totalPairs << " pairs! 🎉\n";
 cout << "⏱️ Time taken: " << fixed << setprecision(2) << elapsed.count() << " seconds.\n";
-cout << " Do you want to try harder mode or customize your grid ?\n" << endl;
 }
 } 
-}while (choice == 'y' || choice == "Y');
-return 0;
+bool shouldrestart(){
+    char decision;
+    cout << "Do you want to play again? (y/n): " << endl;
+    cin >> decision;
+    if (decision == 'y' || decision == 'Y'){
+        return true;
+    }
+    else if (decision == 'n' || decision == 'N'){
+        cout << "Thanks for playing! Goodbye!" << endl;
+        return false;
+    }
+    else{
+        cout << "Invalid input. please enter 'y' or 'n' to continue." << endl;
+        return shouldrestart();
+    }
+}
+int main() {
+    char decision;
+    do {
+        runprogram();
+    } while (shouldrestart());
+    clearScreen();
+    cout <<"Program ended."<< endl;
+    return 0;
 }
