@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <random>
 #include <chrono>
+#include <fstream>
 #include <thread>
 #include <iomanip>
 #include <sstream>
@@ -27,10 +28,9 @@ void clearScreen() {
     #endif
 }
 
-
 // Print the current board, showing revealed cards and hiding others
-void printBoard(const vector<vector <string> > & board,
-                const vector<vector <bool> > & revealed,int rows, int cols)
+void printBoard(const vector<vector<string> >& board,
+                const vector<vector<bool> >& revealed, int rows, int cols)
 {
     cout << "    ";
     for(int c = 0; c < cols; c++)
@@ -51,24 +51,221 @@ void printBoard(const vector<vector <string> > & board,
     cout << "   +" << string(cols*4, '-') << "+\n";
 }
 
+// Save game state to a file
+void saveGame(const vector<vector<string> >& board,
+              const vector<vector<bool> >& revealed,
+              const vector<string>& deck,
+              const vector<string>& fruitPool,
+              int rows, int cols, int timelimit,
+              int pairsFound, int totalPairs,
+              double elapsedTime)
+{
+    ofstream outFile("game_save.txt");
+    if (!outFile) {
+        cout << "Error: Could not save game. Check file permissions or disk space.\n";
+        return;
+    }
 
-// Prompt the user for a valid card coordinate or quit
-pair<int,int> getSelection(const vector<vector<bool> > & revealed, int rows, int cols) {
+    // Save difficulty settings
+    outFile << rows << " " << cols << " " << timelimit << "\n";
+
+    // Save game progress
+    outFile << pairsFound << " " << totalPairs << " " << elapsedTime << "\n";
+
+    // Save board
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            vector<string>::const_iterator it = find(fruitPool.begin(), fruitPool.end(), board[r][c]);
+            int idx = distance(fruitPool.begin(), it);
+            outFile << idx << " ";
+        }
+        outFile << "\n";
+    }
+
+    // Save revealed state
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            outFile << (revealed[r][c] ? 1 : 0) << " ";
+        }
+        outFile << "\n";
+    }
+
+    // Save deck
+    outFile << deck.size() << "\n";
+    for (vector<string>::const_iterator card = deck.begin(); card != deck.end(); ++card) {
+        vector<string>::const_iterator it = find(fruitPool.begin(), fruitPool.end(), *card);
+        int idx = distance(fruitPool.begin(), it);
+        outFile << idx << " ";
+    }
+    outFile << "\n";
+
+    // Save fruitPool
+    outFile << fruitPool.size() << "\n";
+    for (size_t i = 0; i < fruitPool.size(); i++) {
+        outFile << i << " " << fruitPool[i] << "\n";
+    }
+
+    outFile.close();
+    cout << "Game saved successfully.\n";
+}
+
+// Load game state from a file
+bool loadGame(vector<vector<string> >& board,
+              vector<vector<bool> >& revealed,
+              vector<string>& deck,
+              vector<string>& fruitPool,
+              int& rows, int& cols, int& timelimit,
+              int& pairsFound, int& totalPairs,
+              double& elapsedTime)
+{
+    ifstream inFile("game_save.txt");
+    if (!inFile) {
+        cout << "No saved game found.\n";
+        return false;
+    }
+
+    // Load difficulty settings
+    if (!(inFile >> rows >> cols >> timelimit) || rows <= 0 || cols <= 0 || timelimit <= 0) {
+        cout << "Error: Invalid difficulty settings in save file.\n";
+        inFile.close();
+        return false;
+    }
+
+    // Load game progress
+    if (!(inFile >> pairsFound >> totalPairs >> elapsedTime) || 
+        pairsFound < 0 || totalPairs <= 0 || elapsedTime < 0) {
+        cout << "Error: Invalid game progress in save file.\n";
+        inFile.close();
+        return false;
+    }
+
+    // Resize vectors
+    board.resize(rows, vector<string>(cols));
+    revealed.resize(rows, vector<bool>(cols));
+
+    // Load board
+    vector<int> boardIndices(rows * cols);
+    for (int i = 0; i < rows * cols; i++) {
+        if (!(inFile >> boardIndices[i])) {
+            cout << "Error: Invalid board data in save file.\n";
+            inFile.close();
+            return false;
+        }
+    }
+
+    // Load revealed state
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            int val;
+            if (!(inFile >> val)) {
+                cout << "Error: Invalid revealed state in save file.\n";
+                inFile.close();
+                return false;
+            }
+            revealed[r][c] = (val == 1);
+        }
+    }
+
+    // Load deck
+    int deckSize;
+    if (!(inFile >> deckSize) || deckSize < 0) {
+        cout << "Error: Invalid deck size in save file.\n";
+        inFile.close();
+        return false;
+    }
+    deck.resize(deckSize);
+    vector<int> deckIndices(deckSize);
+    for (int i = 0; i < deckSize; i++) {
+        if (!(inFile >> deckIndices[i])) {
+            cout << "Error: Invalid deck data in save file.\n";
+            inFile.close();
+            return false;
+        }
+    }
+
+    // Load fruitPool
+    int fruitPoolSize;
+    if (!(inFile >> fruitPoolSize) || fruitPoolSize <= 0) {
+        cout << "Error: Invalid fruit pool size in save file.\n";
+        inFile.close();
+        return false;
+    }
+    fruitPool.resize(fruitPoolSize);
+    for (int i = 0; i < fruitPoolSize; i++) {
+        int idx;
+        string fruit;
+        if (!(inFile >> idx) || idx < 0 || idx >= fruitPoolSize) {
+            cout << "Error: Invalid fruit pool index in save file.\n";
+            inFile.close();
+            return false;
+        }
+        inFile.ignore();
+        getline(inFile, fruit);
+        fruitPool[idx] = fruit;
+    }
+
+    // Validate fruitPool size
+    int pairsNeeded = rows * cols / 2;
+    if (fruitPoolSize < pairsNeeded) {
+        cout << "Error: Fruit pool size too small for game requirements.\n";
+        inFile.close();
+        return false;
+    }
+
+    // Reconstruct board and deck using fruitPool
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            int idx = boardIndices[r * cols + c];
+            if (idx >= static_cast<int>(fruitPool.size())) {
+                cout << "Error: Invalid board index in save file.\n";
+                inFile.close();
+                return false;
+            }
+            board[r][c] = fruitPool[idx];
+        }
+    }
+    for (int i = 0; i < deckSize; i++) {
+        int idx = deckIndices[i];
+        if (idx >= static_cast<int>(fruitPool.size())) {
+            cout << "Error: Invalid deck index in save file.\n";
+            inFile.close();
+            return false;
+        }
+        deck[i] = fruitPool[idx];
+    }
+
+    inFile.close();
+    return true;
+}
+
+// Check if a saved game exists
+bool hasSavedGame() {
+    ifstream inFile("game_save.txt");
+    return inFile.good();
+}
+
+// Prompt the user for a valid card coordinate, quit, or save
+pair<int, int> getSelection(const vector<vector<bool> >& revealed, int rows, int cols) {
     string input;
     int r, c;
     while (true) {
-        cout << "Enter row and col (e.g. \"1 2\") or 'q' to quit: ";
+        cout << "Enter row and col (e.g. \"1 2\"), 'q' to quit, or 's' to save and quit: ";
         getline(cin, input);
-        
-        // Check for quit command
+
+        // Check for quit or save commands
         if (input == "q" || input == "Q") {
-            return make_pair(-1, -1); // Special value to indicate quit
+            return make_pair(-1, -1); // Indicate quit
+        }
+        if (input == "s" || input == "S") {
+            return make_pair(-2, -2); // Indicate save and quit
         }
 
         // Parse input as coordinates
+
         istringstream iss(input);
+        
         if (!(iss >> r >> c)) {
-            cout << "Invalid input. Enter two numbers or 'q' to quit.\n";
+            cout << "Invalid input. Enter two numbers, 'q' to quit, or 's' to save.\n";
             continue;
         }
         if (r >= 0 && r < rows && c >= 0 && c < cols) {
@@ -78,263 +275,303 @@ pair<int,int> getSelection(const vector<vector<bool> > & revealed, int rows, int
                 cout << "That card is already revealed. Pick another.\n";
             }
         } else {
-            cout << "Out of range. 0 ≤ row < " << rows
-                 << ", 0 ≤ col < " << cols << ".\n";
+            cout << "Out of range. 0 <= row < " << rows
+                 << ", 0 <= col < " << cols << ".\n";
         }
     }
 }
-bool getDifficultyLevel(int& rows, int& cols,int& timelimit) {
+
+bool getDifficultyLevel(int& rows, int& cols, int& timelimit) {
     char choice;
     while (true) {
         cout << "Choose difficulty level:\n";
-        cout << "  E - Easy (4x2, 4 pairs,timelimit = 180 seconds)"<<endl;
-        cout << "  M - Medium (4x4, 8 pairs,timelimit =240 seconds)"<<endl;
-        cout << "  H - Hard (6x4, 12 pairs,timelimit = 250 seconds)"<<endl;                                                         
-        cout << "  C - Customize (customize grid size and timelimit)"<<endl;
-        cout << "Enter E, M, H or C: ";
+        cout << "  E - Easy (4x2, 4 pairs, timelimit = 180 seconds)\n";
+        cout << "  M - Medium (4x4, 8 pairs, timelimit = 240 seconds)\n";
+        cout << "  H - Hard (6x4, 12 pairs, timelimit = 250 seconds)\n";
+        cout << "  C - Customize (customize grid size and timelimit)\n";
+        cout << "Enter E, M, H, or C: ";
         cin >> choice;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         choice = toupper(choice);
         if (choice == 'E') {
-            rows = 4;
-            cols = 2;
-            timelimit = 180;
+            rows = 4; cols = 2; timelimit = 180;
             return true;
         } else if (choice == 'M') {
-            rows = 4;
-            cols = 4;
-            timelimit = 240;
+            rows = 4; cols = 4; timelimit = 240;
             return true;
         } else if (choice == 'H') {
-            rows = 6;
-            cols = 4;
-            timelimit = 250;
+            rows = 6; cols = 4; timelimit = 250;
             return true;
-        // Let user customize the grid
         } else if (choice == 'C') {
             cout << "Enter number of rows:\n";
-            cin >> rows;
+            if (!(cin >> rows)) {
+                cout << "Invalid input. Please enter a number.\n";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                continue;
+            }
             cout << "Enter number of columns:\n";
-            cin >> cols;
+            if (!(cin >> cols)) {
+                cout << "Invalid input. Please enter a number.\n";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                continue;
+            }
             cout << "Enter time limit in seconds:\n";
-            cin >> timelimit;
-            if (timelimit <=0){
+            if (!(cin >> timelimit)) {
+                cout << "Invalid input. Please enter a number.\n";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                continue;
+            }
+            if (timelimit <= 0) {
                 cout << "Invalid input for time limit. Please try again.\n";
                 continue;
             }
-            if (rows <= 0 || cols <= 0){
+            if (rows <= 0 || cols <= 0) {
                 cout << "Invalid input for rows or columns. Please try again.\n";
                 continue;
             }
-            if ((rows * cols % 2) !=0 ) {
+            if ((rows * cols % 2) != 0) {
                 cout << "Error: Grid size must be even.\n";
                 continue;
             }
             if (rows * cols > 38) {
-                cout << "Error :Not enough fruits in the pool for the selected grid size.\n";
+                cout << "Error: Not enough fruits in the pool for the selected grid size.\n";
                 cout << "Please choose a smaller grid size or add more fruits to the pool.\n";
                 continue;
             }
-            return true;            
+            return true;
         } else {
-            cout << "Invalid Choice.";
+            cout << "Invalid Choice.\n";
         }
     }
 }
-// Fisher-Yates shuffle algorithm to randomize the order of elements.
-void fisherYatesShuffle(std::vector<string>& vec) {
-    // Seed the random number generator
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    // Shuffle the vector using the Fisher-Yates algorithm
-    // Perform the Fisher-Yates shuffle
+
+// Fisher-Yates shuffle algorithm
+void fisherYatesShuffle(vector<string>& vec) {
+    // Use srand and rand for pre-C++11 random number generation
+    srand(static_cast<unsigned int>(time(0)));
     for (size_t i = vec.size() - 1; i > 0; --i) {
-        std::uniform_int_distribution<size_t> dist(0, i);
-        size_t j = dist(gen);
-        std::swap(vec[i], vec[j]);
+        size_t j = rand() % (i + 1);
+        swap(vec[i], vec[j]);
     }
 }
-void runprogram() {
-    char decision;
-    // 1) Prepare a list of fruits (pair each one)
-    int rows, cols;
-    int timelimit;
-    getDifficultyLevel(rows,cols,timelimit); 
-    cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear newline after difficulty input
-  
-    // 2) Define a large pool of fruits to support various grid sizes
+
+void runprogram(bool loadSaved = false) {
+    int rows, cols, timelimit;
+    vector<vector<string> > board;
+    vector<vector<bool> > revealed;
+    vector<string> deck;
     vector<string> fruitPool;
-    fruitPool.push_back("🍎");
-    fruitPool.push_back("🍌");
-    fruitPool.push_back("🍒");
-    fruitPool.push_back("🍇");
-    fruitPool.push_back("🍉");
-    fruitPool.push_back("🍍");
-    fruitPool.push_back("🥝");
-    fruitPool.push_back("🍑");
-    fruitPool.push_back("🍓");
-    fruitPool.push_back("🍈");
-    fruitPool.push_back("🥭");
-    fruitPool.push_back("🍐");
-    fruitPool.push_back("🍊");
-    fruitPool.push_back("🍋");
-    fruitPool.push_back("🍏");
-    fruitPool.push_back("🍅");
-    fruitPool.push_back("🍆");
-    fruitPool.push_back("🥥");
-    fruitPool.push_back("🍍");
-    fruitPool.push_back("🍒");
-    fruitPool.push_back("🍇");
-    fruitPool.push_back("🍈");
-    fruitPool.push_back("🍓");
-    fruitPool.push_back("🥑");
-    fruitPool.push_back("🍊");
-    fruitPool.push_back("🍋");
-    fruitPool.push_back("🍐");
-    fruitPool.push_back("🍎");
-    fruitPool.push_back("🍉");
-    fruitPool.push_back("🥝");
-    fruitPool.push_back("🍆");
-    fruitPool.push_back("🍅");
-    fruitPool.push_back("🥭");
-    fruitPool.push_back("🍏");
-    fruitPool.push_back("🥥");
-    fruitPool.push_back("🍌");
-    fruitPool.push_back("🍑");
-    fruitPool.push_back("🍍");
-    fruitPool.push_back("🍒");
+    int pairsFound = 0, totalPairs = 0;
+    double elapsedTime = 0.0;
+    chrono::steady_clock::time_point startTime;
 
-  // Ensure the grid size is valid (even number of cards)
-    if ((rows * cols) % 2 != 0) {
-        cerr << "Error: Grid size (rows * cols) must be even.\n";
-        return;
-    }
-  // Calculate pairs needed 
-    const int pairsNeeded = rows * cols / 2;
+    // Define fruit pool using push_back instead of initializer list
+    fruitPool.clear();
+    fruitPool.push_back("🍎"); fruitPool.push_back("🍌"); fruitPool.push_back("🍒");
+    fruitPool.push_back("🍇"); fruitPool.push_back("🍉"); fruitPool.push_back("🍍");
+    fruitPool.push_back("🥝"); fruitPool.push_back("🍑"); fruitPool.push_back("🍓");
+    fruitPool.push_back("🍈"); fruitPool.push_back("🥭"); fruitPool.push_back("🍐");
+    fruitPool.push_back("🍊"); fruitPool.push_back("🍋"); fruitPool.push_back("🍏");
+    fruitPool.push_back("🍅"); fruitPool.push_back("🍆"); fruitPool.push_back("🥥");
+    fruitPool.push_back("🍍"); fruitPool.push_back("🍒"); fruitPool.push_back("🍇");
+    fruitPool.push_back("🍈"); fruitPool.push_back("🍓"); fruitPool.push_back("🥑");
+    fruitPool.push_back("🍊"); fruitPool.push_back("🍋"); fruitPool.push_back("🍐");
+    fruitPool.push_back("🍎"); fruitPool.push_back("🍉"); fruitPool.push_back("🥝");
+    fruitPool.push_back("🍆"); fruitPool.push_back("🍅"); fruitPool.push_back("🥭");
+    fruitPool.push_back("🍏"); fruitPool.push_back("🥥"); fruitPool.push_back("🍌");
+    fruitPool.push_back("🍑"); fruitPool.push_back("🍍"); fruitPool.push_back("🍒");
 
-  // Check if fruit pool is sufficient
-   if (fruitPool.size() < pairsNeeded) {
-    cerr << "Error: Fruit pool size (" << fruitPool.size() 
-         << ") must be at least " << pairsNeeded << ".\n";
-         return;
-}
-
-// 3) Randomly select pairsNeeded fruits
-srand(static_cast<unsigned>(time(0)));
-fisherYatesShuffle(fruitPool);
-vector<string> selectedFruits(fruitPool.begin(), fruitPool.begin() + pairsNeeded);
-
-// 4) Build the deck: duplicate each selected fruit and shuffle
-vector<string> deck;
-for (size_t i = 0; i < selectedFruits.size(); ++i) {
-    deck.push_back(selectedFruits[i]);
-    deck.push_back(selectedFruits[i]);
-}
-// Shuffle the deck to randomize card positions
-fisherYatesShuffle(deck);
-
-// 5) Lay out the board
-vector<vector<string> > board(rows, vector<string>(cols));
-vector<vector<bool> > revealed(rows, vector<bool>(cols, false));
-int idx = 0;
-for (int r = 0; r < rows; r++){
-    for (int c = 0; c < cols; c++)
-        board[r][c] = deck[idx++];
-}
-int pairsFound = 0, totalPairs = rows * cols / 2;
-
-// Start timer
-auto startTime = std::chrono::steady_clock::now();
-std ::chrono::duration<double> elapsed;
-// 6) Game loop
-while (pairsFound < totalPairs) {
-    clearScreen();
-    cout << "Memory Game: find all " << totalPairs << " pairs!\n\n";
-    printBoard(board, revealed, rows, cols);
-
-    // First selection
-    cout << "\nSelect first card:\n";
-    pair<int,int> first = getSelection(revealed, rows, cols);
-    if (first.first == -1 && first.second == -1) {
-        clearScreen();
-        cout << "Game quit. Thanks for playing!\n";
-        return;
-    }
-    int r1 = first.first;
-    int c1 = first.second;
-    revealed[r1][c1] = true;
-    clearScreen();
-    printBoard(board, revealed, rows, cols);
-
-    // Second selection
-    cout << "\nSelect second card:\n";
-    pair<int,int> second = getSelection(revealed, rows, cols);
-    if (second.first == -1 && second.second == -1) {
-        clearScreen();
-        cout << "Game quit. Thanks for playing!\n";
-        return;
-    }
-    int r2 = second.first;
-    int c2 = second.second;
-    revealed[r2][c2] = true;
-    clearScreen();
-    printBoard(board, revealed, rows, cols);
-
-    // Check for match
-    if (board[r1][c1] == board[r2][c2]) {
-        cout << "\nMatched! " << board[r1][c1] << "\n";
-        pairsFound++;
+    if (loadSaved && loadGame(board, revealed, deck, fruitPool, rows, cols, timelimit,
+                             pairsFound, totalPairs, elapsedTime)) {
+        // Adjust startTime to account for elapsed time
+        chrono::steady_clock::time_point now = chrono::steady_clock::now();
+        chrono::steady_clock::duration elapsedDuration = 
+            chrono::duration_cast<chrono::steady_clock::duration>(
+                chrono::duration<double>(elapsedTime));
+        startTime = now - elapsedDuration;
     } else {
-        cout << "\nNot a match.\n";
-        // Pause so the user can see
-        cout.flush();
-        #ifdef _WIN32
-            Sleep(PAUSE_MS);
-        #else
-            usleep(PAUSE_MS * 1000);
-        #endif
-        // Hide them again
-        revealed[r1][c1] = revealed[r2][c2] = false;
-    }
-    cout << "\n(Found " << pairsFound << " of " << totalPairs << " pairs.)\n";
-    cout << "Press Enter to continue...";
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-    cin.get();
+        // New game setup
+        getDifficultyLevel(rows, cols, timelimit);
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-    // Stop timer
-    auto endTime = std::chrono::steady_clock::now();
-    elapsed = endTime - startTime;
+        if ((rows * cols) % 2 != 0) {
+            cerr << "Error: Grid size (rows * cols) must be even.\n";
+            return;
+        }
+        const int pairsNeeded = rows * cols / 2;
+        if (fruitPool.size() < static_cast<size_t>(pairsNeeded)) {
+            cerr << "Error: Fruit pool size (" << fruitPool.size()
+                 << ") must be at least " << pairsNeeded << ".\n";
+            return;
+        }
+
+        fisherYatesShuffle(fruitPool);
+        vector<string> selectedFruits(fruitPool.begin(), fruitPool.begin() + pairsNeeded);
+
+        deck.clear();
+        for (vector<string>::const_iterator fruit = selectedFruits.begin(); 
+             fruit != selectedFruits.end(); ++fruit) {
+            deck.push_back(*fruit);
+            deck.push_back(*fruit);
+        }
+        fisherYatesShuffle(deck);
+
+        board.assign(rows, vector<string>(cols));
+        revealed.assign(rows, vector<bool>(cols, false));
+        int idx = 0;
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                board[r][c] = deck[idx++];
+            }
+        }
+        totalPairs = rows * cols / 2;
+        startTime = chrono::steady_clock::now();
+    }
+
+    // Game loop
+    while (pairsFound < totalPairs) {
+        clearScreen();
+        cout << "Memory Game: find all " << totalPairs << " pairs!\n\n";
+        printBoard(board, revealed, rows, cols);
+
+        // First selection
+        cout << "\nSelect first card:\n";
+        pair<int,int> first = getSelection(revealed, rows, cols);
+        if (first.first == -1 && first.second == -1) {
+            clearScreen();
+            cout << "Game quit. Thanks for playing!\n";
+            return;
+        }
+        if (first.first == -2 && first.second == -2) {
+            // Save game
+            chrono::steady_clock::time_point endTime = chrono::steady_clock::now();
+            chrono::duration<double> elapsed = endTime - startTime;
+            saveGame(board, revealed, deck, fruitPool, rows, cols, timelimit,
+                     pairsFound, totalPairs, elapsed.count());
+            clearScreen();
+            cout << "Game saved and quit. Thanks for playing!\n";
+            return;
+        }
+        int r1 = first.first;
+        int c1 = first.second;
+        revealed[r1][c1] = true;
+        clearScreen();
+        printBoard(board, revealed, rows, cols);
+
+        // Second selection
+        cout << "\nSelect second card:\n";
+        pair<int,int> second = getSelection(revealed, rows, cols);
+        if (second.first == -1 && second.second == -1) {
+            clearScreen();
+            cout << "Game quit. Thanks for playing!\n";
+            return;
+        }
+        if (second.first == -2 && second.second == -2) {
+            // Save game
+            chrono::steady_clock::time_point endTime = chrono::steady_clock::now();
+            chrono::duration<double> elapsed = endTime - startTime;
+            saveGame(board, revealed, deck, fruitPool, rows, cols, timelimit,
+                     pairsFound, totalPairs, elapsed.count());
+            clearScreen();
+            cout << "Game saved and quit. Thanks for playing!\n";
+            return;
+        }
+        int r2 = second.first;
+        int c2 = second.second;
+        revealed[r2][c2] = true;
+        clearScreen();
+        printBoard(board, revealed, rows, cols);
+
+        // Check for match
+        if (board[r1][c1] == board[r2][c2]) {
+            cout << "\nMatched! " << board[r1][c1] << "\n";
+            pairsFound++;
+        } else {
+            cout << "\nNot a match.\n";
+            cout.flush();
+            #ifdef _WIN32
+                Sleep(PAUSE_MS);
+            #else
+                usleep(PAUSE_MS * 1000);
+            #endif
+            revealed[r1][c1] = revealed[r2][c2] = false;
+        }
+        cout << "\n(Found " << pairsFound << " of " << totalPairs << " pairs.)\n";
+
+        // Check time limit
+        chrono::steady_clock::time_point endTime = chrono::steady_clock::now();
+        chrono::duration<double> elapsed = endTime - startTime;
+        if (elapsed.count() >= timelimit) {
+            clearScreen();
+            cout << "Sorry. There is no time left.\n";
+            return;
+        }
+
+        cout << "Press Enter to continue...";
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.get();
+    }
+
+    clearScreen();
+    chrono::steady_clock::time_point endTime = chrono::steady_clock::now();
+    chrono::duration<double> elapsed = endTime - startTime;
+    cout << "Congratulations! You found all " << totalPairs << " pairs!\n";
+    cout << "Time taken: " << fixed << setprecision(2) << elapsed.count() << " seconds.\n";
+
+    // Delete save file after winning
+    remove("game_save.txt");
 }
-clearScreen();
-if (elapsed.count() >= timelimit){
-cout << "Sorry. There is no time left."<< endl;
-}
-else{
-cout << "🎉 Congratulations! You found all " << totalPairs << " pairs! 🎉\n";
-cout << "⏱️ Time taken: " << fixed << setprecision(2) << elapsed.count() << " seconds.\n";
-}
-} 
-bool shouldrestart(){
+
+bool shouldrestart() {
     char decision;
-    cout << "Do you want to play again? (y/n): " << endl;
+    cout << "Do you want to play again? (y/n): ";
     cin >> decision;
-    if (decision == 'y' || decision == 'Y'){
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    decision = toupper(decision);
+    if (decision == 'Y') {
         return true;
-    }
-    else if (decision == 'n' || decision == 'N'){
-        cout << "Thanks for playing! Goodbye!" << endl;
+    } else if (decision == 'N') {
+        cout << "Thanks for playing! Goodbye!\n";
         return false;
-    }
-    else{
-        cout << "Invalid input. please enter 'y' or 'n' to continue." << endl;
+    } else {
+        cout << "Invalid input. Please enter 'y' or 'n'.\n";
         return shouldrestart();
     }
 }
+
 int main() {
-    char decision;
-    do {
-        runprogram();
-    } while (shouldrestart());
     clearScreen();
-    cout <<"Program ended."<< endl;
+    cout << "Welcome to the Memory Puzzle Game!\n";
+
+    do {
+        char choice;
+        bool loadSaved = false;
+        if (hasSavedGame()) {
+            while (true) {
+                cout << "\nDo you want to:\n";
+                cout << "  N - Start a new game\n";
+                cout << "  R - Resume saved game\n";
+                cout << "Enter N or R: ";
+                cin >> choice;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                choice = toupper(choice);
+                if (choice == 'R') {
+                    loadSaved = true;
+                    break;
+                } else if (choice == 'N') {
+                    break;
+                } else {
+                    cout << "Invalid choice. Please enter N or R.\n";
+                }
+            }
+        }
+        runprogram(loadSaved);
+    } while (shouldrestart());
+
+    clearScreen();
+    cout << "Program ended.\n";
     return 0;
 }
