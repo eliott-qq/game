@@ -42,18 +42,18 @@ With endless possible combinations, can you remember it all?
 # Developer
 *For a more detailed understanding of the multiple files present in the program.*
 
-### Main.cpp
+## Main.cpp
 (Attach direct link here)
 - The main body of the program begins with an engaging introduction to the game. It then prompts the user to choose between starting a new game or continuing a saved one.
 - If the player opts to continue a saved game, the program checks for the existence of a saved file. If a valid save is found, the game will load and display the saved state. If no save exists, the program will inform the player of the invalid choice.
 - Should the player choose to start a new game, a fresh and randomized gameplay experience will be generated.
 
-### Fruitpool.cpp
+## Fruitpool.cpp
 (Attach direct link here)
 - The file contains all the possible types of fruits based on text, each with colors represented by ANSI escape codes. 
 
 
-### Utils.cpp
+## Utils.cpp
 (Attach direct link here)
 - The utilities file contains all the functions involved in the game.
  ### 1. Game Board Generation
@@ -79,7 +79,7 @@ With endless possible combinations, can you remember it all?
 
  ### 7. Fisher-Yates Shuffle Algorithm
    - The function starts by initializing the random number generator based on the current time. It then iterates backward through the vector, which represents the board game size, starting from the last element down to the second element. For each element at index i, it generates a random index j between 0 and i. The fruits at indices i and j are then swapped. The output moves to *1.Game Board Generation.*
-### Record.cpp
+## Record.cpp
 (Attach direct link here)
 *The records file contains all the functions involved in saving gameplay.*
 
