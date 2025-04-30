@@ -19,8 +19,9 @@ With endless possible combinations, can you remember it all?
 # Features Implemented:
 
 ### Generation of random events 🍉🍒🍌
-  - The Memory Game generates random pairs of fruits using the Fisher-Yates Shuffle, a well-established algorithm for creating  permutations of a list. By using the current time as a seed, the algorithm ensures that each execution of the program produces a different order for the memory pool, enhancing the game's randomness and replayability.
-Data structures for storing data 
+ - The Memory Game generates random pairs of fruits using the Fisher-Yates Shuffle, a well-established algorithm for creating  permutations of a list. By using the current time as a seed, the algorithm ensures that each execution of the program produces a different order for the memory pool, enhancing the game's randomness and replayability.
+
+## Data structures for storing data 
  - As the game involves a process of trial and error in testing memorial abilities, the code stores data regarding gameplay. In particular, the number of attempts, correctly identified pairs, and gameplay duration. Moreover, the program includes vectors to store coordinates and memory pairs.
 
 ### Dynamic memory management 🤔💭
