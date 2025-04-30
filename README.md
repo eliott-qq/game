@@ -1,10 +1,10 @@
 # Team Members
 
-Buenaventura Irish Aves 3036326371
-Chen Xinyu 3036451360
-Kong Deyi 3036279009
-Qi Qingquan 3036291447
-Wu Zeyuan 3035773046
+- Buenaventura Irish Aves 3036326371
+- Chen Xinyu 3036451360
+- Kong Deyi 3036279009
+- Qi Qingquan 3036291447
+- Wu Zeyuan 3035773046
 
 # Description
 
