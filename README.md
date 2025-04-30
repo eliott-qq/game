@@ -55,26 +55,50 @@ Data structures for storing data
 ### Utils.cpp
 (Attach direct link here)
 - The utilities file contains all the functions involved in the game.
-  ### Game Board Generation
+  ### 1. Game Board Generation
     - The function generates and displays the game board for a fruit-matching game. It first determines the maximum length of the fruit names in the fruitnames vector to set an appropriate block width for display, adding padding for centering. It then prints the column numbers, ensuring each number is centered within its block. After drawing a separator line, the function iterates through each row and column of the board, checking if each card has been revealed. If revealed, it displays the corresponding fruit with color formatting; if not revealed, it shows an asterisk. The function calculates padding dynamically based on the actual content length, excluding color codes, to ensure proper alignment. Finally, it prints a closing separator line, completing the visual representation of the game board.
   
-  ### Save Game Function
+  ### 2. Save Game Function
    - The file *‘game_saved.txt’* is where the current gameplay process will be recorded. It begins by opening the file for writing and checks for errors. The function then writes the board dimensions, time limit, number of pairs found, total pairs, and elapsed time. It iterates through the game board to record the indices of the fruits in the fruit pool, followed by the revealed status of each card (1 for revealed, 0 for hidden). It also saves the deck size and the indices of the cards in the fruit pool, along with the size and names of the fruits. Additionally, it captures the state of whether the first card has been flipped and its coordinates if applicable. Finally, the function closes the file and confirms that the game has been successfully saved.
     
-  ### Load Game Function
+  ### 3. Load Game Function
   - The function depends on the *4.Initializing Saved Game* process, which checks the required inputs by opening the file ‘game_save.txt’ If the file is empty, the function returns an invalid input message. If the file contains data, all necessary variables are initialized to match the saved game conditions. This includes generating the board, fruit pairs, and deck as per the saved state. The time limit is adjusted to reflect the saved condition, deducting the time already used. Once all these processes are complete, the file is closed.
     
-  ### Initializing Saved Game
+  ### 4. Initializing Saved Game
   - The file ‘game_save.txt’ is opened to reveal the saved board, revealed fruits, deck, fruit pool, rows, columns, time limit, pairs found, total pairs, elapsed time, whether a card was revealed, and what the card is. All the following variables are then sent to *3.Load Game Function* for proper initializing.
     
-  ### Save Game or Quit Game Option
+  ### 5. Save Game or Quit Game Option
   - The function is triggered after each pair of fruits is found or not found. It prompts the user to input the desired row and column to continue gameplay, save their progress (S), or quit (Q).
   - Upon receiving a row or column input, the function checks if the values are within the board limits. It then provides feedback, either revealing a fruit or indicating an invalid choice.
   - If the user selects S, the output is directed to the 2.Save Game Function. If Q is chosen, the game will end.
 
-  ### Difficulty Level Selection
+  ### 6. Difficulty Level Selection
   - The function begins by presenting the available difficulty options: Easy (E), Medium (M), Hard (H), and Custom (C). The user is then prompted to input their choice. 
    - If the selection is one of E, M, or H, the function forwards the input to the 1.Game Board Generation, where predefined criteria are applied. If the user selects C for Custom, the function will request input for the desired number of rows, columns, and time limit, which will then be sent to *1.Game Board Generation* for processing.
 
-  ### Fisher-Yates Shuffle Algorithm
+  ### 7. Fisher-Yates Shuffle Algorithm
    - The function starts by initializing the random number generator based on the current time. It then iterates backward through the vector, which represents the board game size, starting from the last element down to the second element. For each element at index i, it generates a random index j between 0 and i. The fruits at indices i and j are then swapped. The output moves to *1.Game Board Generation.*
+### Record.cpp
+(Attach direct link here)
+*The records file contains all the functions involved in saving gameplay.*
+
+  ### 1. Sort Gameplay Difficulty
+   - Based on the user’s most recent gameplay, the difficulty level is converted into a numerical variable for processing with (1) easy, (2) medium, (3) hard, and (4) custom.
+     
+  ### 2. Sorting Gameplay Records
+  - The function inserts a new game record into a sorted linked list, maintaining order based on difficulty and time spent. It first checks if the list is empty or if the new record should be placed at the head based on its difficulty and time spent. If so, it updates the head to point to the new record. If the new record doesn’t belong at the head, the function iterates through the list to find the correct insertion point. It compares the difficulty of the new record with the next record in the list, as well as their time spent, to maintain the sorting criteria. Once the appropriate position is found, it links the new record into the list by adjusting pointers, ensuring the list remains sorted after the insertion.
+
+  ### 3. Print Gameplay Records
+  - The function displays the game history from a linked list of gamerecord entries. It begins by printing a header for the game history. If the list is empty (i.e., no records), it outputs a message indicating that there are no past records. If records exist, the function iterates through the linked list, starting from the head. For each record, it prints the record number, difficulty level, time spent (formatted to two decimal places), and the timestamp of when the game was played. The loop continues until all records have been displayed, ensuring a clear and organized presentation of the game history.
+    
+  ### 4. Save New Gameplay
+  - Saves the game records from a linked list to a file named *‘records.txt.’* It opens the file for writing and initializes a pointer, to traverse the linked list starting from the head. As it iterates through each gamerecord, it writes the difficulty, time spent, and timestamp to the file, separating each value with a comma and ending each record with a newline. The function continues this process until all records have been written to the file, effectively creating a persistent log of the game history that can be referenced later.
+
+  ### 5. Load Saved Gameplay
+  - It initializes by reading game records from *‘records.txt.’* and inserts them into a sorted linked list. It starts by opening the file for reading and checks if the file opened successfully. If not, the function simply returns. It then reads each line from the file in a loop. For each line, it parses the difficulty, time spent (converted from string to double), and timestamp, which are separated by commas. A new record is created with this parsed data, and the *2. Sorting Gameplay Records* is called to insert the new record into the linked list while maintaining the correct order. This process continues until all records from the file have been loaded into the list.
+    
+  ### 6. Gameplay Timestamp
+  - Through retrieving the current time,  it is then converted into local time then used to build a timestamp string. The year is adjusted by adding 1900, and the month is incremented by 1 since it ranges from 0 to 11. The day, hour, minute, and second are formatted with leading zeros for consistency. Finally, the function returns the constructed timestamp as a string, providing a clear representation of the current date and time.
+    
+  ## 7. Delete All Gameplay Records
+  - To remove all game records from the linked list, it starts by iterating through the list and deleting each record while advancing the head pointer. After clearing the list, it sets head to nullptr and calls *4. Save New Gameplay* to update the records file, ensuring it is empty. Finally, it prints a message confirming that all records have been deleted.
