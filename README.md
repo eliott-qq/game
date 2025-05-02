@@ -39,21 +39,31 @@ With endless possible combinations, can you remember it all?
 ### Extra Features: 🤩👀
   - Colored text display for enhanced visual display.
 
-# Developer
+# Non-standard Libraries 📚
+### 1. System Libraries
+- Code: #ifndef_WIN32 & #endif
+- Function: The code is a preprocessor directive in C/C++ which allows the conditional compilation of code. In multi-platform projects, certain code or libraries may only work on specific operating systems; hence, the code ensures that the codebase is unified with the management of platform-specific functionality.	
+
+### 2. POSIX (Portable Operating System Interface) Libraries
+- Code: <unistd.h>
+- Functions: The game utilizes the sleep function, where the game is paused for a few seconds to allow the user to view the game pairs.
+
+# Developer 🥸💻
 *For a more detailed understanding of the multiple files present in the program.*
 
-## Main.cpp
+## main.cpp
 (Attach direct link here)
 - The main body of the program begins with an engaging introduction to the game. It then prompts the user to choose between starting a new game or continuing a saved one.
 - If the player opts to continue a saved game, the program checks for the existence of a saved file. If a valid save is found, the game will load and display the saved state. If no save exists, the program will inform the player of the invalid choice.
 - Should the player choose to start a new game, a fresh and randomized gameplay experience will be generated.
 
-## Fruitpool.cpp
+
+## fruitpool.cpp
 (Attach direct link here)
 - The file contains all the possible types of fruits based on text, each with colors represented by ANSI escape codes. 
 
 
-## Utils.cpp
+## utils.cpp
 (Attach direct link here)
 - The utilities file contains all the functions involved in the game.
  ### 1. Game Board Generation
@@ -79,7 +89,9 @@ With endless possible combinations, can you remember it all?
 
  ### 7. Fisher-Yates Shuffle Algorithm
    - The function starts by initializing the random number generator based on the current time. It then iterates backward through the vector, which represents the board game size, starting from the last element down to the second element. For each element at index i, it generates a random index j between 0 and i. The fruits at indices i and j are then swapped. The output moves to *1.Game Board Generation.*
-## Record.cpp
+
+
+## record.cpp
 (Attach direct link here)
 *The records file contains all the functions involved in saving gameplay.*
 
@@ -103,3 +115,15 @@ With endless possible combinations, can you remember it all?
     
   ### 7. Delete All Gameplay Records
   - To remove all game records from the linked list, it starts by iterating through the list and deleting each record while advancing the head pointer. After clearing the list, it sets head to nullptr and calls *4. Save New Gameplay* to update the records file, ensuring it is empty. Finally, it prints a message confirming that all records have been deleted.
+
+
+## game.cpp
+(Attach link here)
+*This file is involved in executing the game.*
+
+  ### 1. Initializing Gameplay
+  - The game starts with the function *runProgram* to manage the gameplay loop for a memory matching game where players flip cards to find matching fruit pairs. It starts by determining whether to load a saved game *(in record.cpp: 5. Load Saved Gameplay)* or create a new one, initializing variables such as the grid size, deck of fruits, and tracking systems for revealed cards and elapsed time. If starting fresh, the game ensures a valid grid size *(in utils.cpp: 1. Game Board generation)* and generates a shuffled deck using the Fisher Yates Shuffle *(in utils.cpp: 7. Fisher-Yates Shuffle Algorithm)*. 
+  - The main loop continues until all pairs are found or the time limit expires, allowing the player to select cards and check for matches, hiding mismatches after a short delay. Time tracking is handled using chrono, and the game state can be saved if the player exits early *(in utils.cpp: 5. Save Game or Quit Game Option).* Upon completion, the game records the difficulty level, completion time, and current timestamp, updating sorted high scores and offering the option to delete records *(in record.cpp)*  Throughout the process, the game keeps updating the board, displaying feedback messages, and ensuring smooth interaction. 
+
+### 2. Replay Game Option
+  - The function prompts the player to decide whether they want to play again by entering 'y' for yes or 'n' for no. It takes the user's input, converts it to uppercase for consistency, and determines the next action based on their response. If the player enters 'Y', the function returns true signaling the game should restart. If the player enters 'N', it outputs a farewell message and returns false, ending the game. If the input is invalid, the function recursively calls itself, repeatedly prompting the user until a valid response is provided. 
