@@ -16,6 +16,13 @@ All pairs of fruits are initially covered and shuffled thoroughly, where each ma
 
 With endless possible combinations, can you remember it all?
 
+# How to play:
+
+- Choose if you would like to load a saved game (R) or start a new game (N).
+- Start by choosing the difficulty level (E: Easy, M: Medium, H: Hard, and C: Custom)
+- The game will start!
+
+
 # Features Implemented:
 
 ### Generation of random events 🍉🍒🍌
@@ -73,7 +80,7 @@ With endless possible combinations, can you remember it all?
    - The file *‘game_saved.txt’* is where the current gameplay process will be recorded. It begins by opening the file for writing and checks for errors. The function then writes the board dimensions, time limit, number of pairs found, total pairs, and elapsed time. It iterates through the game board to record the indices of the fruits in the fruit pool, followed by the revealed status of each card (1 for revealed, 0 for hidden). It also saves the deck size and the indices of the cards in the fruit pool, along with the size and names of the fruits. Additionally, it captures the state of whether the first card has been flipped and its coordinates if applicable. Finally, the function closes the file and confirms that the game has been successfully saved.
     
  ### 3. Load Game Function
-  - The function depends on the *4.Initializing Saved Game* process, which checks the required inputs by opening the file ‘game_save.txt’ If the file is empty, the function returns an invalid input message. If the file contains data, all necessary variables are initialized to match the saved game conditions. This includes generating the board, fruit pairs, and deck as per the saved state. The time limit is adjusted to reflect the saved condition, deducting the time already used. Once all these processes are complete, the file is closed.
+  - The function depends on the *4.Initializing Saved Game* process, which checks the required inputs by opening the file ‘game_save.txt’ If the file is empty, the function returns an invalid input message. If the file contains data, all necessary variables are initialized to match the saved game conditions. This includes generating the board, fruit pairs, gameplay duration, and deck as per the saved state. Once all these processes are complete, the file is closed.
     
  ### 4. Initializing Saved Game
   - The file ‘game_save.txt’ is opened to reveal the saved board, revealed fruits, deck, fruit pool, rows, columns, time limit, pairs found, total pairs, elapsed time, whether a card was revealed, and what the card is. All the following variables are then sent to *3.Load Game Function* for proper initializing.
@@ -85,7 +92,7 @@ With endless possible combinations, can you remember it all?
 
  ### 6. Difficulty Level Selection
   - The function begins by presenting the available difficulty options: Easy (E), Medium (M), Hard (H), and Custom (C). The user is then prompted to input their choice. 
-   - If the selection is one of E, M, or H, the function forwards the input to the 1.Game Board Generation, where predefined criteria are applied. If the user selects C for Custom, the function will request input for the desired number of rows, columns, and time limit, which will then be sent to *1.Game Board Generation* for processing.
+   - If the selection is one of E, M, or H, the function forwards the input to the 1.Game Board Generation, where predefined criteria are applied. If the user selects C for Custom, the function will request input for the desired number of rows and columns, which will then be sent to *1.Game Board Generation* for processing.
 
  ### 7. Fisher-Yates Shuffle Algorithm
    - The function starts by initializing the random number generator based on the current time. It then iterates backward through the vector, which represents the board game size, starting from the last element down to the second element. For each element at index i, it generates a random index j between 0 and i. The fruits at indices i and j are then swapped. The output moves to *1.Game Board Generation.*
