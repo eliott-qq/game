@@ -19,6 +19,7 @@ With endless possible combinations, can you remember it all?
 # How to play: 🤔❓
 
 ## Demonstration Video! 📽️🕹️
+[![Watch the video](https://img.youtube.com/vi/qauMI_D7QU8/maxresdefault.jpg)](https://youtu.be/qauMI_D7QU8)
 
 ## Step-by-Step Procedure: ▶️🎮
 1. Choose if you would like to load a saved game *Press R* (see step 3) or start a new game *Press N* (see step 2).
