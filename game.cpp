@@ -10,16 +10,12 @@
 #include <iomanip>
 using namespace std;
 
-
+// 1. Initializing Gameplay
 // Head pointer for the linked list of game records
+
 GameRecord* recordHead = nullptr; 
 
-
-
-
-// Run the game program, allowing the player to find matching fruit pairs on a grid, with options to load a saved game, save progress, and manage high scores.
-// Input is from the - loadSaved (bool), which indicates whether to attempt loading a previously saved game state.
-// The function manages the game loop, updates the console display, and modifies global game records.
+// Run the game program, optionally loading a saved game
 
 void runProgram(bool loadSaved) {
     int rows, cols;
@@ -33,14 +29,19 @@ void runProgram(bool loadSaved) {
     pair<int, int> firstFlippedCard = make_pair(-1, -1);
 
     // Check if resuming a saved game
+    
     if (loadSaved && loadGame(board, revealed, deck, fruitNames, rows, cols, 
                               pairsFound, totalPairs, elapsedTime, isFirstCardFlipped, firstFlippedCard)) {
+        
         // Resume timer by adjusting start time with elapsed time from saved game
+        
         chrono::steady_clock::time_point now = chrono::steady_clock::now();
         chrono::steady_clock::duration elapsedDuration = chrono::duration_cast<chrono::steady_clock::duration>(chrono::duration<double>(elapsedTime));
         startTime = now - elapsedDuration;
     } else {
+        
         // Start new game: Select difficulty and set up game board
+        
         getDifficultyLevel(rows, cols);
 
         if ((rows * cols) % 2 != 0) {
@@ -49,6 +50,7 @@ void runProgram(bool loadSaved) {
         }
 
         // Determine number of pairs needed
+        
         const int pairsNeeded = rows * cols / 2;
         if (fruitNames.size() < static_cast<size_t>(pairsNeeded)) {
             cerr << "Error: Not enough fruits in the pool for selected grid size." << endl;
@@ -56,11 +58,13 @@ void runProgram(bool loadSaved) {
         }
 
         // Shuffle fruits and select the necessary amount
+        
         vector<string> shuffledFruits = fruitNames;
         fisherYatesShuffle(shuffledFruits);
         vector<string> selectedFruits(shuffledFruits.begin(), shuffledFruits.begin() + pairsNeeded);
 
         // Build deck with pairs and shuffle deck
+        
         deck.clear();
         for (const auto& fruit : selectedFruits) {
             deck.push_back(fruit);
@@ -69,6 +73,7 @@ void runProgram(bool loadSaved) {
         fisherYatesShuffle(deck);
 
         // Set up the game board and the revealed matrix
+        
         board.assign(rows, vector<string>(cols));
         revealed.assign(rows, vector<bool>(cols, false));
         int idx = 0;
@@ -82,18 +87,23 @@ void runProgram(bool loadSaved) {
     }
 
     // Main game loop until all pairs are found
+    
     while (pairsFound < totalPairs) {
         clearScreen();
         cout << "Memory Game: find all " << totalPairs << " pairs!" << endl << endl;
         printBoard(board, revealed, rows, cols);
 
         if (isFirstCardFlipped) {
+            
             // Second card selection
+            
             cout << "\nSelect second card:" << endl;
             pair<int, int> second = getSelection(revealed, rows, cols);
             if (second.first == -1) return;  // Quit game
             if (second.first == -2) {
+                
                 // Save game then quit
+                
                 auto endTime = chrono::steady_clock::now();
                 chrono::duration<double> elapsed = endTime - startTime;
                 saveGame(board, revealed, deck, fruitNames, rows, cols, pairsFound, totalPairs, elapsed.count(), true, firstFlippedCard);
@@ -121,12 +131,16 @@ void runProgram(bool loadSaved) {
             string dummy;
             getline(cin, dummy);
         } else {
+            
             // First card selection
+            
             cout << "\nSelect first card:" << endl;
             pair<int, int> first = getSelection(revealed, rows, cols);
             if (first.first == -1) return;  // Quit game
             if (first.first == -2) {
+                
                 // Save game then quit
+                
                 auto endTime = chrono::steady_clock::now();
                 chrono::duration<double> elapsed = endTime - startTime;
                 saveGame(board, revealed, deck, fruitNames, rows, cols, pairsFound, totalPairs, elapsed.count(), false, firstFlippedCard);
@@ -143,6 +157,7 @@ void runProgram(bool loadSaved) {
     }
 
     // End game: all pairs have been found
+    
     clearScreen();
     auto endTime = chrono::steady_clock::now();
     chrono::duration<double> elapsed = endTime - startTime;
@@ -150,6 +165,7 @@ void runProgram(bool loadSaved) {
     cout << "Time taken: " << fixed << setprecision(2) << elapsed.count() << " seconds." << endl;
     
     // Determine difficulty based on grid dimensions
+    
     string difficulty = (rows == 4 && cols == 2) ? "Easy" :
                         (rows == 4 && cols == 4) ? "Medium" :
                         (rows == 6 && cols == 4) ? "Hard" : "Custom";
@@ -157,6 +173,7 @@ void runProgram(bool loadSaved) {
     string timeNow = getCurrentTimestamp();
 
     // Create a new game record and update the high scores
+    
     GameRecord* newRec = new GameRecord{difficulty, timeSpent, timeNow, nullptr};
     insertSorted(recordHead, newRec);
     saveRecords(recordHead);
@@ -176,15 +193,12 @@ void runProgram(bool loadSaved) {
     }
 
     // Remove saved game file after finishing the game
+    
     remove("game_save.txt");
 }
 
-
-
-
-// This function prompts the user to decide whether to play the game again and validates their input.
-// The function reads user input directly from the console (y/n).
-// Returns true if the user chooses to play again ('y' or 'Y'), false if they choose to quit ('n' or 'N'). Recursively calls itself for invalid inputs.
+// 2. Replay Game Option
+// Function to determine if the game should restart
 
 bool shouldRestart() {
     char decision;
