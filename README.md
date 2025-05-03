@@ -21,14 +21,16 @@ With endless possible combinations, can you remember it all?
 ## Demonstration Video! 📽️🕹️
 
 ## Step-by-Step Procedure: ▶️🎮
-- Choose if you would like to load a saved game *Press R* or start a new game *Press N*.
-- Start by choosing the difficulty level (*Press E* Easy, *Press M* Medium, *Press H* Hard, and *Press C* Custom)
-- The game will start!
-- Input *row* then *column* for which fruit you would like revealed. Each section is mapped with the appropriate coordinates.
-- Press *Press Enter* and repeat for the next.
-- Once the pair has been revealed you may *Press Q* or *Press S* save and quit the game. If you choose to continue, *Press Enter*.
-- Repeat until you have found all pairs.
-- You will be able to see your high scores and have the option to delete them! *Press Y* for yes and *Press N* for no.
+1. Choose if you would like to load a saved game *Press R* (see step 3) or start a new game *Press N* (see step 2).
+2. If you wil start a new game then choose the difficulty level: *Press E* Easy, *Press M* Medium, *Press H* Hard, and *Press C* Custom.
+
+The game will start!
+
+3. Input *row* then *column* for which fruit you would like revealed. Each section is mapped with the appropriate coordinates.
+4. Press *Press Enter* and repeat for the next.
+5. Once the pair has been revealed you may *Press Q* or *Press S* save and quit the game. If you choose to continue, *Press Enter*.
+6. Repeat until you have found all pairs.
+7. You will be able to see your high scores and have the option to delete them! *Press Y* for yes and *Press N* for no.
 
 
 # Features Implemented:
