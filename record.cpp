@@ -18,8 +18,6 @@ int difficultyRank(const string& difficulty) {
     return 4; // Custom
 }
 
-
-
 // 2. Sorting Gameplay Records
 // The new record is inserted based on the difficulty level and time spent
 // Inputs are:
@@ -45,8 +43,6 @@ void insertSorted(GameRecord*& head, GameRecord* newRecord) {
 }
 
 
-
-
 // 3. Print Game Records
 // Print the game records in a sorted order
 // Input is the Pointer to the head of the linked list of game records
@@ -69,9 +65,7 @@ void printRecords(GameRecord* head) {
 }
 
 
-
 // 4. Save New Gameplay
-// The records are saved in a text file named "records.txt"
 // Saves all game records from the linked list to a text file named "records.txt".
 
 
@@ -84,10 +78,7 @@ void saveRecords(GameRecord* head) {
     }
 }
 
-
-
 // 5. Load Saved Gameplay
-// Load game records from "records.txt" file
 // Loads game records from "records.txt" and inserts them into the linked list in sorted order
 
 void loadRecords(GameRecord*& head) {
@@ -107,10 +98,8 @@ void loadRecords(GameRecord*& head) {
     }
 }
 
-
 // 6. Gameplay Timestamp
 // Get the current timestamp formatted as YYYY-MM-DD HH:MM:SS
-// Returns a timestamp in the format "YYYY-MM-DD HH:MM:SS".
 
 string getCurrentTimestamp() {
     time_t now = time(0);
