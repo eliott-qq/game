@@ -70,19 +70,16 @@ The game will start!
 *For a more detailed understanding of the multiple files present in the program.*
 
 ## main.cpp
-(Attach direct link here)
 - The main body of the program begins with an engaging introduction to the game. It then prompts the user to choose between starting a new game or continuing a saved one.
 - If the player opts to continue a saved game, the program checks for the existence of a saved file. If a valid save is found, the game will load and display the saved state. If no save exists, the program will inform the player of the invalid choice.
 - Should the player choose to start a new game, a fresh and randomized gameplay experience will be generated.
 
 
 ## fruitpool.cpp
-(Attach direct link here)
 - The file contains all the possible types of fruits based on text, each with colors represented by ANSI escape codes. 
 
 
 ## utils.cpp
-(Attach direct link here)
 - The utilities file contains all the functions involved in the game.
  ### 1. Game Board Generation
    - The function generates and displays the game board for a fruit-matching game. It first determines the maximum length of the fruit names in the fruitnames vector to set an appropriate block width for display, adding padding for centering. It then prints the column numbers, ensuring each number is centered within its block. After drawing a separator line, the function iterates through each row and column of the board, checking if each card has been revealed. If revealed, it displays the corresponding fruit with color formatting; if not revealed, it shows an asterisk. The function calculates padding dynamically based on the actual content length, excluding color codes, to ensure proper alignment. Finally, it prints a closing separator line, completing the visual representation of the game board.
@@ -110,7 +107,6 @@ The game will start!
 
 
 ## record.cpp
-(Attach direct link here)
 *The records file contains all the functions involved in saving gameplay.*
 
   ### 1. Sort Gameplay Difficulty
@@ -136,7 +132,6 @@ The game will start!
 
 
 ## game.cpp
-(Attach link here)
 *This file is involved in executing the game.*
 
   ### 1. Initializing Gameplay
