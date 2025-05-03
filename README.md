@@ -16,11 +16,19 @@ All pairs of fruits are initially covered and shuffled thoroughly, where each ma
 
 With endless possible combinations, can you remember it all?
 
-# How to play:
+# How to play: 🤔❓
 
-- Choose if you would like to load a saved game (R) or start a new game (N).
-- Start by choosing the difficulty level (E: Easy, M: Medium, H: Hard, and C: Custom)
+## Demonstration Video! 📽️🕹️
+
+## Step-by-Step Procedure: ▶️🎮
+- Choose if you would like to load a saved game *Press R* or start a new game *Press N*.
+- Start by choosing the difficulty level (*Press E* Easy, *Press M* Medium, *Press H* Hard, and *Press C* Custom)
 - The game will start!
+- Input *row* then *column* for which fruit you would like revealed. Each section is mapped with the appropriate coordinates.
+- Press *Press Enter* and repeat for the next.
+- Once the pair has been revealed you may *Press Q* or *Press S* save and quit the game. If you choose to continue, *Press Enter*.
+- Repeat until you have found all pairs.
+- You will be able to see your high scores and have the option to delete them! *Press Y* for yes and *Press N* for no.
 
 
 # Features Implemented:
