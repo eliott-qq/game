@@ -7,6 +7,9 @@
 using namespace std;
 
 // 1. Sort Gameplay Difficulty
+// Assigns a numerical rank to a game difficulty level for sorting purposes.
+// Input is the difficulty level of the game ("Easy", "Medium", "Hard", or other).
+// Returns 1 for "Easy", 2 for "Medium", 3 for "Hard", or 4 for any other difficulty (e.g., "Custom").
 
 int difficultyRank(const string& difficulty) {
     if (difficulty == "Easy") return 1;
@@ -15,8 +18,14 @@ int difficultyRank(const string& difficulty) {
     return 4; // Custom
 }
 
+
+
 // 2. Sorting Gameplay Records
 // The new record is inserted based on the difficulty level and time spent
+// Inputs are:
+// Reference to the head pointer of the linked list of game records
+// Pointer to the new game record to be inserted.
+// Modifies the linked list by inserting the new record in sorted order
 
 void insertSorted(GameRecord*& head, GameRecord* newRecord) {
     if (!head || difficultyRank(newRecord->difficulty) < difficultyRank(head->difficulty) ||
@@ -34,8 +43,14 @@ void insertSorted(GameRecord*& head, GameRecord* newRecord) {
     newRecord->next = curr->next;
     curr->next = newRecord;
 }
+
+
+
+
 // 3. Print Game Records
 // Print the game records in a sorted order
+// Input is the Pointer to the head of the linked list of game records
+// Outputs the game records to the console, including difficulty, time spent, and timestamp.
 
 void printRecords(GameRecord* head) {
     cout << "\n=== Game History ===\n";
@@ -53,8 +68,12 @@ void printRecords(GameRecord* head) {
     }
 }
 
+
+
 // 4. Save New Gameplay
 // The records are saved in a text file named "records.txt"
+// Saves all game records from the linked list to a text file named "records.txt".
+
 
 void saveRecords(GameRecord* head) {
     ofstream outFile("records.txt");
@@ -65,8 +84,11 @@ void saveRecords(GameRecord* head) {
     }
 }
 
+
+
 // 5. Load Saved Gameplay
 // Load game records from "records.txt" file
+// Loads game records from "records.txt" and inserts them into the linked list in sorted order
 
 void loadRecords(GameRecord*& head) {
     ifstream inFile("records.txt");
@@ -85,8 +107,10 @@ void loadRecords(GameRecord*& head) {
     }
 }
 
+
 // 6. Gameplay Timestamp
 // Get the current timestamp formatted as YYYY-MM-DD HH:MM:SS
+// Returns a timestamp in the format "YYYY-MM-DD HH:MM:SS".
 
 string getCurrentTimestamp() {
     time_t now = time(0);
@@ -103,6 +127,8 @@ string getCurrentTimestamp() {
 
 // 7. Delete All Gameplay Records
 // Option to delete all gameplay records
+// Deletes all game records from the linked list and clears the "records.txt" file
+// Frees all memory in the linked list, sets head to nullptr, and empties "records.txt"
 
 void deleteAllRecords(GameRecord*& head) {
     while (head) {

@@ -12,6 +12,7 @@
 #include <unistd.h>
 using namespace std;
 
+// Clears the console screen, using platform-specific commands for Windows or Unix-based systems.
 void clearScreen() {
 #ifdef _WIN32
     system("cls");
@@ -20,8 +21,16 @@ void clearScreen() {
 #endif
 }
 
+
 // 1. Game Board Generation
  // Find the longest word in fruitpool for block width and account for color codes
+// The inputs are:
+//   - board (const vector<vector<string>>&): 2D vector representing the game board with fruit names.
+//   - revealed (const vector<vector<bool>>&): 2D vector indicating which cards are revealed.
+//   - rows (int): Number of rows in the board.
+//   - cols (int): Number of columns in the board.
+// Outputs the formatted game board to the console.
+
 void printBoard(const vector<vector<string>>& board, const vector<vector<bool>>& revealed, int rows, int cols) {
     size_t maxLength = 0;
     for (const auto& fruit : fruitNames) {
@@ -65,13 +74,24 @@ void printBoard(const vector<vector<string>>& board, const vector<vector<bool>>&
 }
 
 // 2. Save Game Function
-
+// inputs are: 
+//   - board (const vector<vector<string>>&): 2D vector representing the game board.
+//   - revealed (const vector<vector<bool>>&): 2D vector indicating which cards are revealed.
+//   - deck (const vector<string>&): Vector of fruits in the deck.
+//   - fruitPool (const vector<string>&): Vector of all possible fruit names.
+//   - rows (int): Number of rows in the board.
+//   - cols (int): Number of columns in the board.
+//   - pairsFound (int): Number of pairs found so far.
+//   - totalPairs (int): Total number of pairs in the game.
+//   - elapsedTime (double): Time elapsed in seconds.
+//   - isFirstCardFlipped (bool): Whether the first card of a pair is flipped.
+//   - firstFlippedCard (pair<int, int>): Coordinates of the first flipped card, if applicable.
+// Writes the game state to "game_save.txt" and outputs a success or error message to the console.
 void saveGame(const vector<vector<string>>& board,
               const vector<vector<bool>>& revealed,
               const vector<string>& deck,
               const vector<string>& fruitPool,
-              int rows, int cols, int timelimit,
-              int pairsFound, int totalPairs,
+              int rows, int cols, int pairsFound, int totalPairs,
               double elapsedTime,
               bool isFirstCardFlipped,
               pair<int, int> firstFlippedCard) {
@@ -81,7 +101,8 @@ void saveGame(const vector<vector<string>>& board,
         return;
     }
 
-    outFile << rows << " " << cols << " " << timelimit << "\n";
+    // Write rows and cols (timelimit removed)
+    outFile << rows << " " << cols << "\n";
     outFile << pairsFound << " " << totalPairs << " " << elapsedTime << "\n";
 
     for (int r = 0; r < rows; r++) {
@@ -122,13 +143,27 @@ void saveGame(const vector<vector<string>>& board,
     cout << "Game saved successfully.\n";
 }
 
+
 // 3. Load Game Function
+// inputs are: 
+//   - board (vector<vector<string>>&): 2D vector to store the game board.
+//   - revealed (vector<vector<bool>>&): 2D vector to store which cards are revealed.
+//   - deck (vector<string>&): Vector to store the deck of fruits.
+//   - fruitPool (vector<string>&): Vector to store all possible fruit names.
+//   - rows (int&): Number of rows in the board.
+//   - cols (int&): Number of columns in the board.
+//   - pairsFound (int&): Number of pairs found so far.
+//   - totalPairs (int&): Total number of pairs in the game.
+//   - elapsedTime (double&): Time elapsed in seconds.
+//   - isFirstCardFlipped (bool&): Whether the first card of a pair is flipped.
+//   - firstFlippedCard (pair<int, int>&): Coordinates of the first flipped card, if applicable.
+// Returns true if the game state was loaded successfully, false otherwise (e.g., file not found or corrupted).
 
 bool loadGame(vector<vector<string>>& board,
               vector<vector<bool>>& revealed,
               vector<string>& deck,
               vector<string>& fruitPool,
-              int& rows, int& cols, int& timelimit,
+              int& rows, int& cols,
               int& pairsFound, int& totalPairs,
               double& elapsedTime,
               bool& isFirstCardFlipped,
@@ -139,7 +174,7 @@ bool loadGame(vector<vector<string>>& board,
         return false;
     }
 
-    if (!(inFile >> rows >> cols >> timelimit)) return false;
+    if (!(inFile >> rows >> cols)) return false;
     if (!(inFile >> pairsFound >> totalPairs >> elapsedTime)) return false;
 
     board.resize(rows, vector<string>(cols));
@@ -193,24 +228,33 @@ bool loadGame(vector<vector<string>>& board,
     return true;
 }
 
-// 4. Initalizing Saved game
 
+// 4. Initalizing Saved game
+// Checks if a saved game exists by attempting to load it.
+// Returns true if a saved game exists and can be loaded, false otherwise.
 bool hasSavedGame() {
     vector<vector<string>> board;
     vector<vector<bool>> revealed;
     vector<string> deck;
     vector<string> fruitPool;
-    int rows, cols, timelimit;
+    int rows, cols;
     int pairsFound, totalPairs;
     double elapsedTime;
     bool isFirstCardFlipped;
     pair<int, int> firstFlippedCard;
 
-    return loadGame(board, revealed, deck, fruitPool, rows, cols, timelimit,
+    return loadGame(board, revealed, deck, fruitPool, rows, cols,
                     pairsFound, totalPairs, elapsedTime, isFirstCardFlipped, firstFlippedCard);
 }
 
+
+
 // 5. Save game or Quit Game Option
+// inputs are: 
+//   - revealed (const vector<vector<bool>>&): 2D vector indicating which cards are revealed.
+//   - rows (int): Number of rows in the board.
+//   - cols (int): Number of columns in the board.
+// Returns the selected coordinates (r, c) if valid, (-1, -1) to quit, or (-2, -2) to save and quit.
 
 pair<int, int> getSelection(const vector<vector<bool>>& revealed, int rows, int cols) {
     string input;
@@ -242,15 +286,20 @@ pair<int, int> getSelection(const vector<vector<bool>>& revealed, int rows, int 
     }
 }
 
-// 6. Difficulty Level Selection
 
-bool getDifficultyLevel(int& rows, int& cols, int& timelimit) {
+// 6. Difficulty Level Selection
+// inputs are: 
+//   - rows (int&): Reference to store the number of rows.
+//   - cols (int&): Reference to store the number of columns.
+// Returns true if a valid difficulty level is selected and dimensions are set, false otherwise (not used in this implementation).
+
+bool getDifficultyLevel(int& rows, int& cols) {
     char choice;
     while (true) {
         cout << "Choose difficulty level:\n";
-        cout << "  E - Easy (4x2, 4 pairs, 180 seconds)\n";
-        cout << "  M - Medium (4x4, 8 pairs, 240 seconds)\n";
-        cout << "  H - Hard (6x4, 12 pairs, 250 seconds)\n";
+        cout << "  E - Easy (4x2, 4 pairs)\n";
+        cout << "  M - Medium (4x4, 8 pairs)\n";
+        cout << "  H - Hard (6x4, 12 pairs)\n";
         cout << "  C - Customize\n";
         cout << "Enter E, M, H, or C: ";
         cin >> choice;
@@ -258,21 +307,20 @@ bool getDifficultyLevel(int& rows, int& cols, int& timelimit) {
         choice = toupper(choice);
 
         if (choice == 'E') {
-            rows = 4; cols = 2; timelimit = 180;
+            rows = 4; cols = 2;
             return true;
         } else if (choice == 'M') {
-            rows = 4; cols = 4; timelimit = 240;
+            rows = 4; cols = 4;
             return true;
         } else if (choice == 'H') {
-            rows = 6; cols = 4; timelimit = 250;
+            rows = 6; cols = 4;
             return true;
         } else if (choice == 'C') {
             cout << "Enter number of rows: ";
             cin >> rows;
             cout << "Enter number of columns: ";
             cin >> cols;
-            cout << "Enter time limit (seconds): ";
-            cin >> timelimit;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             return true;
         } else {
             cout << "Invalid choice.\n";
@@ -282,7 +330,7 @@ bool getDifficultyLevel(int& rows, int& cols, int& timelimit) {
 
 // 7. Fisher Yates Algorithm 
 // Randomized fruit pools
-
+// Input is the the reference to the vector of strings to be shuffled
 void fisherYatesShuffle(vector<string>& vec) {
     srand(static_cast<unsigned int>(time(0)));
     for (size_t i = vec.size() - 1; i > 0; --i) {

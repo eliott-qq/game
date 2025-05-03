@@ -12,6 +12,7 @@ vector<string> fruitNames = {
 
 // The colors of the fruits
 // The colors are represented using ANSI escape codes
+// Output a map with fruit names as keys (strings) and ANSI color codes as values (strings), accessible globally.
 
 map<string, string> fruitColors = {
     {"Apple", "\033[31m"},

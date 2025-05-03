@@ -5,6 +5,10 @@ using namespace std;
 
 // Game Introduction
 
+// Serves as the entry point for the Memory Puzzle Game, initializing the game, handling saved game options, and controlling the game loop until the user chooses to exit.
+// The function takes no command-line arguments and reads user input directly from the console.
+// Returns 0 to indicate successful program termination.
+
 int main() {
     clearScreen();
     loadRecords(recordHead);
@@ -24,6 +28,7 @@ int main() {
                 cin >> choice;
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 choice = toupper(choice);
+                cout << endl;
                 if (choice == 'R') {
                     loadSaved = true;
                     break;
