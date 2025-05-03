@@ -23,7 +23,7 @@ void clearScreen() {
 
 
 // 1. Game Board Generation
- // Find the longest word in fruitpool for block width and account for color codes
+// Find the longest word in fruitpool for block width and account for color codes
 // The inputs are:
 //   - board (const vector<vector<string>>&): 2D vector representing the game board with fruit names.
 //   - revealed (const vector<vector<bool>>&): 2D vector indicating which cards are revealed.
@@ -38,9 +38,11 @@ void printBoard(const vector<vector<string>>& board, const vector<vector<bool>>&
     }
     
     // Set block width (add 2 padding on each side for centering)
+    
     const int blockWidth = maxLength + 4;  
     
     // Print column numbers
+    
     cout << "    ";
     for (int c = 0; c < cols; c++) {
         string colNum = to_string(c);
@@ -51,6 +53,7 @@ void printBoard(const vector<vector<string>>& board, const vector<vector<bool>>&
 
     // Print board
     // Use actual content length for padding calculation
+    
     for (int r = 0; r < rows; r++) {
         cout << setw(2) << r << " |";
         for (int c = 0; c < cols; c++) {
@@ -65,6 +68,7 @@ void printBoard(const vector<vector<string>>& board, const vector<vector<bool>>&
             }
             
             // Calculate padding based on actual content length, not including color codes
+            
             int padding = (blockWidth - content.length()) / 2;
             cout << string(padding, ' ') << displayContent << string(blockWidth - padding - content.length(), ' ');
         }
@@ -87,6 +91,7 @@ void printBoard(const vector<vector<string>>& board, const vector<vector<bool>>&
 //   - isFirstCardFlipped (bool): Whether the first card of a pair is flipped.
 //   - firstFlippedCard (pair<int, int>): Coordinates of the first flipped card, if applicable.
 // Writes the game state to "game_save.txt" and outputs a success or error message to the console.
+
 void saveGame(const vector<vector<string>>& board,
               const vector<vector<bool>>& revealed,
               const vector<string>& deck,
@@ -102,6 +107,7 @@ void saveGame(const vector<vector<string>>& board,
     }
 
     // Write rows and cols (timelimit removed)
+    
     outFile << rows << " " << cols << "\n";
     outFile << pairsFound << " " << totalPairs << " " << elapsedTime << "\n";
 
@@ -232,6 +238,7 @@ bool loadGame(vector<vector<string>>& board,
 // 4. Initalizing Saved game
 // Checks if a saved game exists by attempting to load it.
 // Returns true if a saved game exists and can be loaded, false otherwise.
+
 bool hasSavedGame() {
     vector<vector<string>> board;
     vector<vector<bool>> revealed;
@@ -331,6 +338,7 @@ bool getDifficultyLevel(int& rows, int& cols) {
 // 7. Fisher Yates Algorithm 
 // Randomized fruit pools
 // Input is the the reference to the vector of strings to be shuffled
+
 void fisherYatesShuffle(vector<string>& vec) {
     srand(static_cast<unsigned int>(time(0)));
     for (size_t i = vec.size() - 1; i > 0; --i) {
